@@ -58,8 +58,6 @@ npm install
 npm run dev
 ```
 
-La aplicación web estará en `http://localhost:5173/`
-
 ## 📊 Cómo funciona
 
 ### 1. Medición de velocidad

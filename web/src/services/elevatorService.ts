@@ -1,88 +1,91 @@
 import type { Elevator, CreateElevatorDTO } from '../types';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 /**
- * Servicio para comunicarse con el backend
- * Por ahora usaremos localStorage como mock hasta tener una API
+ * Servicio para comunicarse con la API REST del backend
  */
 class ElevatorService {
-  private readonly STORAGE_KEY = 'elevators';
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+      ...options,
+    });
 
-  private loadFromStorage(): Elevator[] {
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    if (!data) return [];
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Error desconocido' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
 
-    const elevators = JSON.parse(data);
+    // Para respuestas 204 (No Content)
+    if (response.status === 204) {
+      return null as T;
+    }
+
+    const data = await response.json();
+
     // Convertir strings de fecha a objetos Date
-    return elevators.map((e: any) => ({
-      ...e,
-      dateVisited: new Date(e.dateVisited),
-      createdAt: new Date(e.createdAt),
-      updatedAt: new Date(e.updatedAt)
-    }));
+    if (Array.isArray(data)) {
+      return data.map(this.parseDates) as T;
+    } else if (data && typeof data === 'object') {
+      return this.parseDates(data) as T;
+    }
+
+    return data;
   }
 
-  private saveToStorage(elevators: Elevator[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(elevators));
+  private parseDates(item: any): any {
+    if (!item) return item;
+    return {
+      ...item,
+      dateVisited: item.dateVisited ? new Date(item.dateVisited) : undefined,
+      createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
+      updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+    };
   }
 
   async getAll(): Promise<Elevator[]> {
-    return this.loadFromStorage();
+    return this.request<Elevator[]>('/elevators');
   }
 
   async getById(id: string): Promise<Elevator | null> {
-    const elevators = this.loadFromStorage();
-    return elevators.find(e => e.id === id) || null;
+    try {
+      return await this.request<Elevator>(`/elevators/${id}`);
+    } catch (error) {
+      return null;
+    }
   }
 
   async create(dto: CreateElevatorDTO): Promise<Elevator> {
-    const elevators = this.loadFromStorage();
-
-    const now = new Date();
-    const newElevator: Elevator = {
-      id: crypto.randomUUID(),
-      location: dto.location,
-      speedMeasurement: dto.speedMeasurement,
-      rating: dto.rating,
-      overallScore: this.calculateOverallScore(dto.rating),
-      notes: dto.notes,
-      dateVisited: dto.dateVisited || now,
-      createdAt: now,
-      updatedAt: now
-    };
-
-    elevators.push(newElevator);
-    this.saveToStorage(elevators);
-
-    return newElevator;
+    return this.request<Elevator>('/elevators', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
   }
 
   async delete(id: string): Promise<boolean> {
-    const elevators = this.loadFromStorage();
-    const filtered = elevators.filter(e => e.id !== id);
-
-    if (filtered.length === elevators.length) {
+    try {
+      await this.request<void>(`/elevators/${id}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch (error) {
       return false;
     }
-
-    this.saveToStorage(filtered);
-    return true;
   }
 
   async findByCity(city: string): Promise<Elevator[]> {
-    const elevators = this.loadFromStorage();
-    return elevators.filter(
-      e => e.location.city?.toLowerCase() === city.toLowerCase()
-    );
+    return this.request<Elevator[]>(`/elevators/city/${encodeURIComponent(city)}`);
   }
 
   async getTopRated(limit: number = 10): Promise<Elevator[]> {
-    const elevators = this.loadFromStorage();
-    return elevators
-      .sort((a, b) => b.overallScore - a.overallScore)
-      .slice(0, limit);
+    return this.request<Elevator[]>(`/elevators/top/${limit}`);
   }
 
-  // Helpers
+  // Helpers (mantienen la lógica del lado del cliente para el formulario)
   calculateSecondsPerFloor(totalSeconds: number, floorsTraversed: number): number {
     if (floorsTraversed === 0) throw new Error('floorsTraversed cannot be zero');
     return totalSeconds / floorsTraversed;
@@ -91,13 +94,6 @@ class ElevatorService {
   calculateSpeedScore(secondsPerFloor: number): number {
     const score = 10 / secondsPerFloor;
     return Math.max(1, Math.min(10, score));
-  }
-
-  private calculateOverallScore(rating: any): number {
-    const { speed, smoothness, design, capacity } = rating;
-    const sum = speed + smoothness + design + capacity;
-    const average = sum / 4;
-    return Math.round(average * 100) / 100;
   }
 }
 
