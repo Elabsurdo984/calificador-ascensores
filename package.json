@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/example.ts",
+    "dev:persist": "ts-node src/example-with-persistence.ts",
     "build": "tsc",
     "start": "node dist/example.js"
   },
