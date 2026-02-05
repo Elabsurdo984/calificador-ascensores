@@ -51,6 +51,14 @@ const AMERICAN_COUNTRIES = [
   'Trinidad y Tobago',
 ].sort();
 
+// Función para normalizar texto removiendo acentos/tildes
+const normalizeText = (text: string): string => {
+  return text
+    .normalize('NFD') // Descompone caracteres con acentos
+    .replace(/[\u0300-\u036f]/g, '') // Remueve los diacríticos
+    .toLowerCase();
+};
+
 export function CountrySelect({ value, onChange, placeholder = 'Buscar país...' }: CountrySelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState(value);
@@ -80,8 +88,9 @@ export function CountrySelect({ value, onChange, placeholder = 'Buscar país...'
     if (search === '') {
       setFilteredCountries(AMERICAN_COUNTRIES);
     } else {
+      const normalizedSearch = normalizeText(search);
       const filtered = AMERICAN_COUNTRIES.filter(country =>
-        country.toLowerCase().includes(search.toLowerCase())
+        normalizeText(country).includes(normalizedSearch)
       );
       setFilteredCountries(filtered);
     }
@@ -93,9 +102,10 @@ export function CountrySelect({ value, onChange, placeholder = 'Buscar país...'
     setSearch(newValue);
     setIsOpen(true);
 
-    // Si el valor coincide exactamente con un país, actualizar
+    // Si el valor coincide exactamente con un país (ignorando acentos), actualizar
+    const normalizedValue = normalizeText(newValue);
     const exactMatch = AMERICAN_COUNTRIES.find(
-      country => country.toLowerCase() === newValue.toLowerCase()
+      country => normalizeText(country) === normalizedValue
     );
     if (exactMatch) {
       onChange(exactMatch);
