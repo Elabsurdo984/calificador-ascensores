@@ -4,6 +4,7 @@ import { ElevatorLocationType } from '../types';
 import { elevatorService } from '../services/elevatorService';
 import { CountrySelect } from './CountrySelect';
 import { CitySelect } from './CitySelect';
+import { LocationNameSelect } from './LocationNameSelect';
 
 interface ElevatorFormProps {
   onSuccess: () => void;
@@ -235,20 +236,6 @@ export function ElevatorForm({ onSuccess }: ElevatorFormProps) {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre del lugar <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ej: Hotel Marriott Plaza"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tipo de edificio
                   </label>
                   <select
@@ -285,6 +272,20 @@ export function ElevatorForm({ onSuccess }: ElevatorFormProps) {
                     countryName={formData.country}
                     onChange={(value) => setFormData({ ...formData, city: value })}
                     placeholder="Buscar ciudad..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre del lugar <span className="text-red-500">*</span>
+                  </label>
+                  <LocationNameSelect
+                    value={formData.name}
+                    city={formData.city}
+                    country={formData.country}
+                    locationType={formData.type}
+                    onChange={(value) => setFormData({ ...formData, name: value })}
+                    placeholder="Buscar lugar..."
                   />
                 </div>
 
