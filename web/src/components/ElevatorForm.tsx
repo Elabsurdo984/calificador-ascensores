@@ -3,6 +3,7 @@ import type { CreateElevatorDTO } from '../types';
 import { ElevatorLocationType } from '../types';
 import { elevatorService } from '../services/elevatorService';
 import { CountrySelect } from './CountrySelect';
+import { CitySelect } from './CitySelect';
 
 interface ElevatorFormProps {
   onSuccess: () => void;
@@ -266,25 +267,24 @@ export function ElevatorForm({ onSuccess }: ElevatorFormProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ciudad
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ej: Buenos Aires"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     País
                   </label>
                   <CountrySelect
                     value={formData.country}
                     onChange={(value) => setFormData({ ...formData, country: value })}
                     placeholder="Buscar país de América..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ciudad
+                  </label>
+                  <CitySelect
+                    value={formData.city}
+                    countryName={formData.country}
+                    onChange={(value) => setFormData({ ...formData, city: value })}
+                    placeholder="Buscar ciudad..."
                   />
                 </div>
 
