@@ -29,9 +29,18 @@ export function calculateSecondsPerFloor(measurement: Omit<SpeedMeasurement, 'se
  * Calcula el score general (promedio de todas las calificaciones)
  */
 export function calculateOverallScore(rating: ElevatorRating): number {
-  const { speed, smoothness, design, capacity } = rating;
-  const sum = speed + smoothness + design + capacity;
-  const average = sum / 4;
+  const {
+    speed, smoothness, precision,
+    noise, lighting, ventilation, spaciousness,
+    cleanliness, maintenance,
+    design, technology,
+    safety, accessibility
+  } = rating;
+
+  const sum = speed + smoothness + precision + noise + lighting + ventilation +
+              spaciousness + cleanliness + maintenance + design + technology +
+              safety + accessibility;
+  const average = sum / 13;
 
   // Redondear a 2 decimales
   return Math.round(average * 100) / 100;
@@ -50,10 +59,28 @@ export function validateRating(value: number, fieldName: string): void {
  * Valida todas las calificaciones de un ascensor
  */
 export function validateElevatorRating(rating: ElevatorRating): void {
+  // Rendimiento
   validateRating(rating.speed, 'speed');
   validateRating(rating.smoothness, 'smoothness');
+  validateRating(rating.precision, 'precision');
+
+  // Confort
+  validateRating(rating.noise, 'noise');
+  validateRating(rating.lighting, 'lighting');
+  validateRating(rating.ventilation, 'ventilation');
+  validateRating(rating.spaciousness, 'spaciousness');
+
+  // Estado y mantenimiento
+  validateRating(rating.cleanliness, 'cleanliness');
+  validateRating(rating.maintenance, 'maintenance');
+
+  // Diseño y tecnología
   validateRating(rating.design, 'design');
-  validateRating(rating.capacity, 'capacity');
+  validateRating(rating.technology, 'technology');
+
+  // Seguridad y accesibilidad
+  validateRating(rating.safety, 'safety');
+  validateRating(rating.accessibility, 'accessibility');
 }
 
 /**
