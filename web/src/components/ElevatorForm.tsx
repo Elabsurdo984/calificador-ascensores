@@ -283,7 +283,6 @@ export function ElevatorForm({ onSuccess }: ElevatorFormProps) {
                     value={formData.name}
                     city={formData.city}
                     country={formData.country}
-                    locationType={formData.type}
                     onChange={(value) => setFormData({ ...formData, name: value })}
                     placeholder="Buscar lugar..."
                   />

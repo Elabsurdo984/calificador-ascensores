@@ -4,7 +4,6 @@ interface LocationNameSelectProps {
   value: string;
   city: string;
   country: string;
-  locationType: string;
   onChange: (value: string) => void;
   placeholder?: string;
 }
@@ -21,7 +20,6 @@ export function LocationNameSelect({
   value,
   city,
   country,
-  locationType,
   onChange,
   placeholder = 'Ej: Hotel Marriott, Torre Eiffel...'
 }: LocationNameSelectProps) {
