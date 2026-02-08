@@ -60,7 +60,7 @@ export class PrismaElevatorRepository implements IElevatorRepository {
     };
   }
 
-  async save(dto: CreateElevatorDTO): Promise<Elevator> {
+  async save(dto: CreateElevatorDTO, userId: string): Promise<Elevator> {
     const ratings = [
         dto.rating.speed,
         dto.rating.smoothness,
@@ -81,6 +81,7 @@ export class PrismaElevatorRepository implements IElevatorRepository {
 
     const record = await this.prisma.elevator.create({
       data: {
+        userId: userId,
         locationName: dto.location.name,
         locationCity: dto.location.city,
         locationCountry: dto.location.country,
@@ -251,5 +252,21 @@ export class PrismaElevatorRepository implements IElevatorRepository {
       orderBy: { overallScore: 'desc' },
     });
     return records.map(this.toDomain);
+  }
+
+  async findByUserId(userId: string): Promise<Elevator[]> {
+    const records = await this.prisma.elevator.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return records.map(this.toDomain);
+  }
+
+  async isOwner(elevatorId: string, userId: string): Promise<boolean> {
+    const elevator = await this.prisma.elevator.findUnique({
+      where: { id: elevatorId },
+      select: { userId: true },
+    });
+    return elevator?.userId === userId;
   }
 }

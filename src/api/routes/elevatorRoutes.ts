@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { PrismaElevatorRepository } from '../../infra';
 import { CreateElevatorDTO } from '../../domain';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth';
 
 const router = Router();
 const repository = new PrismaElevatorRepository();
 
 /**
  * GET /api/elevators
- * Obtiene todos los ascensores
+ * Obtiene todos los ascensores (públicos)
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -15,6 +16,19 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(elevators);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener ascensores' });
+  }
+});
+
+/**
+ * GET /api/elevators/my
+ * Obtiene los ascensores del usuario autenticado
+ */
+router.get('/my', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const elevators = await repository.findByUserId(req.userId!);
+    res.json(elevators);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener tus ascensores' });
   }
 });
 
@@ -82,9 +96,9 @@ router.get('/top/:limit', async (req: Request, res: Response) => {
 
 /**
  * POST /api/elevators
- * Crea un nuevo ascensor
+ * Crea un nuevo ascensor (requiere autenticación)
  */
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const dto: CreateElevatorDTO = req.body;
 
@@ -93,7 +107,7 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Datos incompletos' });
     }
 
-    const elevator = await repository.save(dto);
+    const elevator = await repository.save(dto, req.userId!);
     res.status(201).json(elevator);
   } catch (error: any) {
     res.status(400).json({ error: error.message || 'Error al crear ascensor' });
@@ -102,11 +116,18 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * PUT /api/elevators/:id
- * Actualiza un ascensor existente
+ * Actualiza un ascensor existente (requiere autenticación y ser el dueño)
  */
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
+
+    // Verificar que el usuario sea el dueño
+    const isOwner = await repository.isOwner(id, req.userId!);
+    if (!isOwner) {
+      return res.status(403).json({ error: 'No tienes permiso para modificar este ascensor' });
+    }
+
     const updated = await repository.update(id, req.body);
     if (!updated) {
       return res.status(404).json({ error: 'Ascensor no encontrado' });
@@ -119,11 +140,18 @@ router.put('/:id', async (req: Request, res: Response) => {
 
 /**
  * DELETE /api/elevators/:id
- * Elimina un ascensor
+ * Elimina un ascensor (requiere autenticación y ser el dueño)
  */
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
+
+    // Verificar que el usuario sea el dueño
+    const isOwner = await repository.isOwner(id, req.userId!);
+    if (!isOwner) {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar este ascensor' });
+    }
+
     const deleted = await repository.delete(id);
     if (!deleted) {
       return res.status(404).json({ error: 'Ascensor no encontrado' });

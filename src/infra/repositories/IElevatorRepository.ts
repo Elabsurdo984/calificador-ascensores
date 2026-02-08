@@ -7,7 +7,7 @@ export interface IElevatorRepository {
   /**
    * Guarda un nuevo ascensor
    */
-  save(dto: CreateElevatorDTO): Promise<Elevator>;
+  save(dto: CreateElevatorDTO, userId: string): Promise<Elevator>;
 
   /**
    * Busca un ascensor por ID
@@ -43,4 +43,14 @@ export interface IElevatorRepository {
    * Obtiene el top N de ascensores mejor calificados
    */
   findTopRated(limit: number): Promise<Elevator[]>;
+
+  /**
+   * Busca ascensores por usuario
+   */
+  findByUserId(userId: string): Promise<Elevator[]>;
+
+  /**
+   * Verifica si un usuario es el dueño de un ascensor
+   */
+  isOwner(elevatorId: string, userId: string): Promise<boolean>;
 }

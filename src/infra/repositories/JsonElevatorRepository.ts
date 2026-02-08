@@ -49,8 +49,9 @@ export class JsonElevatorRepository implements IElevatorRepository {
 
   /**
    * Guarda un nuevo ascensor
+   * Nota: JsonElevatorRepository no maneja usuarios, el userId se ignora
    */
-  async save(dto: CreateElevatorDTO): Promise<Elevator> {
+  async save(dto: CreateElevatorDTO, userId: string): Promise<Elevator> {
     const data = await this.readData();
 
     const now = new Date();
@@ -170,5 +171,22 @@ export class JsonElevatorRepository implements IElevatorRepository {
     return data.elevators
       .sort((a, b) => b.overallScore - a.overallScore)
       .slice(0, limit);
+  }
+
+  /**
+   * Busca ascensores por usuario
+   * Nota: JsonElevatorRepository no maneja usuarios, retorna todos los ascensores
+   */
+  async findByUserId(userId: string): Promise<Elevator[]> {
+    return this.findAll();
+  }
+
+  /**
+   * Verifica si un usuario es el dueño de un ascensor
+   * Nota: JsonElevatorRepository no maneja usuarios, siempre retorna true
+   */
+  async isOwner(elevatorId: string, userId: string): Promise<boolean> {
+    const elevator = await this.findById(elevatorId);
+    return elevator !== null;
   }
 }
