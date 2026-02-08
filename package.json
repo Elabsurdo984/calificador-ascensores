@@ -7,7 +7,7 @@
     "dev": "ts-node src/example.ts",
     "dev:persist": "ts-node src/example-with-persistence.ts",
     "api": "ts-node src/api/server.ts",
-    "api:dev": "ts-node --watch src/api/server.ts",
+    "api:dev": "nodemon --exec ts-node src/api/server.ts",
     "build": "tsc",
     "start": "node dist/example.js",
     "start:api": "ts-node src/api/server.ts"
@@ -22,10 +22,14 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^20.11.0"
+    "@types/node": "^20.11.0",
+    "nodemon": "^3.1.11",
+    "prisma": "^6.4.1"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

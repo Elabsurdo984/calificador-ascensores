@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Elevator {
+  id        String   @id @default(uuid())
+  
+  // Location
+  locationName    String
+  locationCity    String?
+  locationCountry String?
+  locationType    String
+  locationAddress String?
+  
+  // Coordinates (Optional)
+  locationLat     Float?
+  locationLng     Float?
+
+  // Technical Info (Optional, flattened from Location.technicalInfo)
+  techBrand       String?
+  techModel       String?
+  techYear        Int?
+  techMaxLoad     Float?
+  techMaxPersons  Int?
+  techFloors      Int?
+
+  // Speed Measurement
+  speedTotalSeconds    Float
+  speedFloors         Int
+  speedSecondsPerFloor Float
+
+  // Rating (Comprehensive)
+  ratingSpeed        Float
+  ratingSmoothness   Float
+  ratingPrecision    Float
+  ratingNoise        Float
+  ratingLighting     Float
+  ratingVentilation  Float
+  ratingSpaciousness Float
+  ratingCleanliness  Float
+  ratingMaintenance  Float
+  ratingDesign       Float
+  ratingTechnology   Float
+  ratingSafety       Float
+  ratingAccessibility Float
+
+  // General
+  overallScore Float
+  notes        String?
+  dateVisited  DateTime
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

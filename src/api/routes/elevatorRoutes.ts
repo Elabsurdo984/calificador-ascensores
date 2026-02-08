@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { JsonElevatorRepository } from '../../infra';
+import { PrismaElevatorRepository } from '../../infra';
 import { CreateElevatorDTO } from '../../domain';
 
 const router = Router();
-const repository = new JsonElevatorRepository();
+const repository = new PrismaElevatorRepository();
 
 /**
  * GET /api/elevators
