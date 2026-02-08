@@ -7,12 +7,22 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
  */
 class ElevatorService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options?.headers as Record<string, string>,
+    };
+
+    // Add Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
       ...options,
+      headers,
     });
 
     if (!response.ok) {
@@ -49,6 +59,10 @@ class ElevatorService {
 
   async getAll(): Promise<Elevator[]> {
     return this.request<Elevator[]>('/elevators');
+  }
+
+  async getMyElevators(): Promise<Elevator[]> {
+    return this.request<Elevator[]>('/elevators/my');
   }
 
   async getById(id: string): Promise<Elevator | null> {

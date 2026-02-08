@@ -10,7 +10,7 @@ interface ElevatorListProps {
 export function ElevatorList({ refresh }: ElevatorListProps) {
   const [elevators, setElevators] = useState<Elevator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'top'>('all');
+  const [filter, setFilter] = useState<'my' | 'all' | 'top'>('my');
   const [sortBy, setSortBy] = useState<'date' | 'score'>('score');
 
   useEffect(() => {
@@ -22,7 +22,9 @@ export function ElevatorList({ refresh }: ElevatorListProps) {
     try {
       let data: Elevator[];
 
-      if (filter === 'top') {
+      if (filter === 'my') {
+        data = await elevatorService.getMyElevators();
+      } else if (filter === 'top') {
         data = await elevatorService.getTopRated(10);
       } else {
         data = await elevatorService.getAll();
@@ -68,7 +70,7 @@ export function ElevatorList({ refresh }: ElevatorListProps) {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">
-          {filter === 'top' ? 'Top 10 Ascensores' : 'Todos los Ascensores'}
+          {filter === 'my' ? 'Mis Ascensores' : filter === 'top' ? 'Top 10 Ascensores' : 'Todos los Ascensores'}
           <span className="ml-2 text-sm font-normal text-gray-600">
             ({elevators.length})
           </span>
@@ -77,9 +79,10 @@ export function ElevatorList({ refresh }: ElevatorListProps) {
         <div className="flex gap-2">
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value as 'all' | 'top')}
+            onChange={(e) => setFilter(e.target.value as 'my' | 'all' | 'top')}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm"
           >
+            <option value="my">Mis Ascensores</option>
             <option value="all">Todos</option>
             <option value="top">Top 10</option>
           </select>
