@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ElevatorForm } from './ElevatorForm';
 import { ElevatorList } from './ElevatorList';
@@ -9,11 +10,22 @@ type Tab = 'list' | 'form' | 'stats';
 export function Dashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<Tab>('list');
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleFormSuccess = () => {
     setRefreshKey(prev => prev + 1);
     setActiveTab('list');
+  };
+
+  const handleNewElevatorClick = () => {
+    if (!isAuthenticated) {
+      if (confirm('Necesitas crear una cuenta para guardar ascensores. ¿Quieres registrarte ahora?')) {
+        navigate('/register');
+      }
+    } else {
+      setActiveTab('form');
+    }
   };
 
   return (
@@ -32,23 +44,42 @@ export function Dashboard() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Bienvenido,</p>
-                <p className="font-semibold text-gray-900">{user?.name}</p>
-              </div>
-              <button
-                onClick={logout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
-              >
-                Cerrar Sesión
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">Bienvenido,</p>
+                    <p className="font-semibold text-gray-900">{user?.name}</p>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-4 py-2 bg-white border-2 border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                  >
+                    Iniciar Sesión
+                  </button>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                    Registrarse
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
           {/* Action Button */}
           <div className="mt-4">
             <button
-              onClick={() => setActiveTab('form')}
+              onClick={handleNewElevatorClick}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
             >
               + Nuevo Ascensor
@@ -80,6 +111,34 @@ export function Dashboard() {
           </div>
         </div>
       </header>
+
+      {/* Info Banner for Non-Authenticated Users */}
+      {!isAuthenticated && (
+        <div className="bg-blue-50 border-l-4 border-blue-600">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm text-blue-800">
+                  <strong className="font-semibold">¡Crea una cuenta gratis!</strong> Regístrate para guardar tus calificaciones de ascensores y acceder a tus datos desde cualquier dispositivo.
+                </p>
+              </div>
+              <div className="ml-4 flex-shrink-0">
+                <button
+                  onClick={() => navigate('/register')}
+                  className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Registrarse
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">

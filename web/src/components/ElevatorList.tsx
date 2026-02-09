@@ -2,15 +2,17 @@ import { useState, useEffect } from 'react';
 import type { Elevator } from '../types';
 import { elevatorService } from '../services/elevatorService';
 import { ElevatorCard } from './ElevatorCard';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ElevatorListProps {
   refresh: number;
 }
 
 export function ElevatorList({ refresh }: ElevatorListProps) {
+  const { isAuthenticated } = useAuth();
   const [elevators, setElevators] = useState<Elevator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'my' | 'all' | 'top'>('my');
+  const [filter, setFilter] = useState<'my' | 'all' | 'top'>(isAuthenticated ? 'my' : 'all');
   const [sortBy, setSortBy] = useState<'date' | 'score'>('score');
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export function ElevatorList({ refresh }: ElevatorListProps) {
     try {
       let data: Elevator[];
 
-      if (filter === 'my') {
+      if (filter === 'my' && isAuthenticated) {
         data = await elevatorService.getMyElevators();
       } else if (filter === 'top') {
         data = await elevatorService.getTopRated(10);
@@ -82,7 +84,7 @@ export function ElevatorList({ refresh }: ElevatorListProps) {
             onChange={(e) => setFilter(e.target.value as 'my' | 'all' | 'top')}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm"
           >
-            <option value="my">Mis Ascensores</option>
+            {isAuthenticated && <option value="my">Mis Ascensores</option>}
             <option value="all">Todos</option>
             <option value="top">Top 10</option>
           </select>
